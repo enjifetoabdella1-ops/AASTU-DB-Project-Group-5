@@ -1,63 +1,45 @@
--- drop tables first so the script can run again without manual cleanup
-DROP TABLE IF EXISTS sale;
-DROP TABLE IF EXISTS inventory;
-DROP TABLE IF EXISTS product;
-DROP TABLE IF EXISTS customer;
-DROP TABLE IF EXISTS supplier;
+GO
+DROP TABLE IF EXISTS Transactions;
+DROP TABLE IF EXISTS Loan;
+DROP TABLE IF EXISTS Employee;
+GO
+CREATE TABLE Employee(
+    employee_id VARCHAR(15) PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    position VARCHAR(50),
+    salary DECIMAL(15,2),
+    hire_date DATE,
+    branch_id VARCHAR(10),
 
--- base tables
-CREATE TABLE supplier (
-	supplier_id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(100) NOT NULL,
-	phone VARCHAR(20) NOT NULL UNIQUE
+    FOREIGN KEY (branch_id) REFERENCES Branch(branch_id)
 );
+GO
+CREATE TABLE Loan(
+    loan_id VARCHAR(15) PRIMARY KEY,
+    customer_id VARCHAR(15),
+    branch_id VARCHAR(10),
+    loan_type VARCHAR(30),
+    loan_amount DECIMAL(15,2),
+    interest_rate DECIMAL(5,2),
+    duration_in_months INT,
+    start_date DATE,
+    status VARCHAR(20),
 
-CREATE TABLE product (
-	product_id INT AUTO_INCREMENT PRIMARY KEY,
-	supplier_id INT NOT NULL,
-	name VARCHAR(100) NOT NULL,
-	price DECIMAL(10,2) NOT NULL,
-	CONSTRAINT product_supplier_fk
-		FOREIGN KEY (supplier_id)
-		REFERENCES supplier(supplier_id)
-		ON UPDATE CASCADE
-		ON DELETE RESTRICT,
-	CONSTRAINT product_price_check CHECK (price >= 0)
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (branch_id) REFERENCES Branch(branch_id)
 );
+GO
 
-CREATE TABLE customer (
-	customer_id INT AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(100) NOT NULL,
-	phone VARCHAR(20) NOT NULL UNIQUE
-);
+CREATE TABLE Transactions(
+    transaction_id VARCHAR(20) PRIMARY KEY,
+    account_no VARCHAR(20),
+    transaction_type VARCHAR(20),
+    amount DECIMAL(15,2),
+    transaction_date DATETIME,
+    description VARCHAR(200),
+    reference_number VARCHAR(30),
 
-CREATE TABLE inventory (
-	inventory_id INT AUTO_INCREMENT PRIMARY KEY,
-	product_id INT NOT NULL UNIQUE,
-	quantity INT NOT NULL,
-	CONSTRAINT inventory_product_fk
-		FOREIGN KEY (product_id)
-		REFERENCES product(product_id)
-		ON UPDATE CASCADE
-		ON DELETE CASCADE,
-	CONSTRAINT inventory_quantity_check CHECK (quantity >= 0)
+    FOREIGN KEY (account_no) REFERENCES Account(account_no)
 );
-
-CREATE TABLE sale (
-	sale_id INT AUTO_INCREMENT PRIMARY KEY,
-	product_id INT NOT NULL,
-	customer_id INT NOT NULL,
-	quantity_sold INT NOT NULL,
-	sale_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT sale_product_fk
-		FOREIGN KEY (product_id)
-		REFERENCES product(product_id)
-		ON UPDATE CASCADE
-		ON DELETE RESTRICT,
-	CONSTRAINT sale_customer_fk
-		FOREIGN KEY (customer_id)
-		REFERENCES customer(customer_id)
-		ON UPDATE CASCADE
-		ON DELETE RESTRICT,
-	CONSTRAINT sale_quantity_check CHECK (quantity_sold > 0)
-);
+GO
